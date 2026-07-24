@@ -1,6 +1,16 @@
-def main():
-    print(f"welcome to llm playground version 3")
+from fastapi import FastAPI
+import uvicorn
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    main()
+from controller.chat_controller import router as chat_router
+
+app = FastAPI(title="LLM Playground")
+
+app.include_router(chat_router)
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True
+    )
