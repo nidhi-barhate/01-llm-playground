@@ -48,3 +48,12 @@ class MessageRepository:
         self.db.commit()
 
         return True
+
+    def delete_all(self) -> int:
+        """
+        Delete all messages.
+        """
+        deleted_count = self.db.query(Message).delete()
+        self.db.commit()
+
+        return deleted_count

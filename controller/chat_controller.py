@@ -11,4 +11,4 @@ router = APIRouter()
 @router.post("/chat")
 def chat(request: ChatRequest, db: Session = Depends(get_db)):
     service = LLMService(db)
-    return service.chat(request.prompt)
+    return service.chat(request)
