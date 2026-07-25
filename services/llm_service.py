@@ -12,7 +12,7 @@ class LLMService:
         self.message_repository = MessageRepository(db)
 
     def chat(self, request: ChatRequest) -> str:
-        if request.is_new_chat_session:
+        if request.new_chat:
             #clear the message history for a new chat session
             self.message_repository.delete_all()
             # Save the message to the database

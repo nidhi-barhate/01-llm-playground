@@ -2,19 +2,17 @@
 
 A conversational AI backend built from scratch using **Python**, **FastAPI**, **SQLite**, and **Ollama**.
 
-This project focuses on understanding the core architecture behind modern LLM applications without relying on AI frameworks such as LangChain or LlamaIndex.
-
-It demonstrates how conversation memory, message history, and local LLM integration work under the hood.
+This project demonstrates the core architecture behind modern LLM-powered applications by implementing conversation memory, persistent chat history, and local Large Language Model (LLM) integration without relying on AI frameworks such as LangChain or LlamaIndex.
 
 ---
 
-## 🎯 Project Goals
+## 🎯 Objectives
 
 - Build a conversational AI backend from scratch
-- Understand the LLM request/response lifecycle
-- Implement conversation memory
-- Learn clean layered architecture
-- Integrate a locally hosted Large Language Model
+- Understand how LLM APIs communicate using structured messages
+- Implement persistent conversation memory
+- Learn clean layered backend architecture
+- Integrate a locally hosted LLM using Ollama
 
 ---
 
@@ -24,25 +22,25 @@ It demonstrates how conversation memory, message history, and local LLM integrat
 |----------|------------|
 | Language | Python |
 | Framework | FastAPI |
+| Validation | Pydantic |
 | ORM | SQLAlchemy |
 | Database | SQLite |
 | LLM | Ollama + Qwen 3 |
-| Validation | Pydantic |
 | HTTP Client | Requests |
 
 ---
 
-## ✨ Key Features
+## ✨ Features
 
-- ✅ RESTful Chat API
-- ✅ Interactive Swagger Documentation
-- ✅ Local LLM Integration (Ollama)
-- ✅ Multi-turn Conversation Memory
-- ✅ Persistent Chat History
-- ✅ SQLAlchemy ORM
-- ✅ Repository Pattern
-- ✅ Service Layer Architecture
-- ✅ Clean Modular Design
+- RESTful Chat API
+- Interactive Swagger UI
+- Local LLM Integration (Ollama)
+- Persistent Conversation Memory
+- Multi-turn Context-Aware Conversations
+- SQLAlchemy ORM
+- Repository Pattern
+- Service Layer Architecture
+- Clean Layered Design
 
 ---
 
@@ -84,7 +82,7 @@ It demonstrates how conversation memory, message history, and local LLM integrat
 
 ---
 
-## ⚙️ Getting Started
+## ▶️ Getting Started
 
 ### Start Ollama
 
@@ -92,7 +90,7 @@ It demonstrates how conversation memory, message history, and local LLM integrat
 ollama serve
 ```
 
-Download the model (if required)
+Download the model (if not already installed)
 
 ```bash
 ollama pull qwen3:8b
@@ -106,7 +104,7 @@ uvicorn app:app --reload
 
 Open Swagger UI
 
-```
+```text
 http://localhost:8000/docs
 ```
 
@@ -116,13 +114,23 @@ http://localhost:8000/docs
 
 ### POST `/api/chat`
 
+Starts a new conversation or continues an existing conversation.
+
 ### Request
 
 ```json
 {
-  "message": "Hello"
+  "new_chat": true,
+  "prompt": "Hello"
 }
 ```
+
+### Request Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `new_chat` | Boolean | `true` starts a new conversation by clearing the existing conversation history. `false` continues the current conversation by loading the previous messages and sending them to the LLM as context. |
+| `prompt` | String | User's input message. |
 
 ### Response
 
@@ -134,11 +142,71 @@ http://localhost:8000/docs
 
 ---
 
-## 💬 Conversation Memory
+## 🧠 Conversation Memory
 
-Unlike a simple prompt-response application, this project stores every conversation in SQLite.
+This project demonstrates how conversational memory works in LLM applications.
 
-Each request follows this flow:
+### New Conversation
+
+```json
+{
+  "new_chat": true,
+  "prompt": "Hello"
+}
+```
+
+Flow
+
+```text
+Clear Conversation History
+        │
+        ▼
+Save User Message
+        │
+        ▼
+Send Current Prompt to LLM
+        │
+        ▼
+Save Assistant Response
+```
+
+---
+
+### Continue Conversation
+
+```json
+{
+  "new_chat": false,
+  "prompt": "What is my name?"
+}
+```
+
+Flow
+
+```text
+Load Conversation History
+        │
+        ▼
+Append Current User Message
+        │
+        ▼
+Convert Messages to LLM Payload
+        │
+        ▼
+Send Complete Conversation
+        │
+        ▼
+Receive Assistant Response
+        │
+        ▼
+Save Assistant Response
+```
+
+This enables the model to generate context-aware responses by using the complete conversation history instead of only the latest prompt.
+
+---
+
+## 💬 Conversation Flow
 
 ```text
 User Prompt
@@ -150,22 +218,20 @@ Save User Message
 Load Conversation History
       │
       ▼
-Convert History to LLM Messages
+Convert Database Records → LLM Messages
       │
       ▼
-Call Ollama
+Send Request to Ollama
       │
       ▼
 Receive Assistant Response
       │
       ▼
-Save Assistant Message
+Save Assistant Response
       │
       ▼
 Return Response
 ```
-
-This enables the model to maintain conversational context across multiple interactions.
 
 ---
 
@@ -178,27 +244,22 @@ This enables the model to maintain conversational context across multiple intera
 - Local Model Execution
 - SQLAlchemy ORM
 - Repository Pattern
+- Service Layer
 - Layered Architecture
-- FastAPI REST APIs
-- SQLite Persistence
+- REST API Development with FastAPI
 
 ---
 
-## 🎓 Learning Outcome
+## 💡 Key Learnings
 
-This project helped me understand the internal architecture of conversational AI systems by implementing:
+Building this project helped me understand:
 
-- LLM communication using REST APIs
-- Persistent conversation history
-- Context-aware multi-turn conversations
-- Clean backend architecture following software engineering best practices
+- How conversational LLM applications communicate using structured messages
+- The purpose of `system`, `user`, and `assistant` roles
+- How conversation memory is implemented using persistent chat history
+- How to integrate local LLMs with Ollama
+- How to design a clean, maintainable backend architecture
+- How SQLAlchemy and SQLite manage conversation data
+- How context-aware AI applications reconstruct conversation history before sending requests to an LLM
 
-Instead of relying on AI frameworks, every component was built from first principles to gain a deeper understanding of how modern LLM applications work.
-
----
-
-## 📍 Project Status
-
-**✅ Completed**
-
-This project is the first milestone in my AI Engineering learning journey and serves as the foundation for upcoming projects on Prompt Engineering, Function Calling, RAG, AI Agents, and Enterprise AI Systems.
+This project was intentionally built without AI orchestration frameworks to gain a deeper understanding of the fundamental building blocks behind modern AI applications.
