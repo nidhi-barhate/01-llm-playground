@@ -37,4 +37,36 @@ class LLMService:
             llm_model = Message(role="assistant", content=output)
             self.message_repository.save(llm_model)
             return output    
-        
+
+    def chat_stream(self, request: ChatRequest):
+        if request.new_chat:
+            #clear the message history for a new chat session
+            self.message_repository.delete_all()
+            # Save the message to the database
+            message_model = Message(role="user", content=request.prompt)
+            self.message_repository.save(message_model)
+            output = ""
+            for chunk in self.ollama_client.chat_stream(request.prompt):
+                output += chunk
+                yield chunk
+            # Save the output to the database
+            llm_model = Message(role="assistant", content=output)
+            self.message_repository.save(llm_model)
+            return output
+        else:
+            # Retrieve the message history for the current chat session
+            messages = self.message_repository.find_all()
+            # Add the new user message to the history
+            message_model = Message(role="user", content=request.prompt)
+            messages.append(message_model)
+             # Save the message to the database
+            self.message_repository.save(message_model)
+            # Send the message history to the Ollama API
+            output = ""
+            for chunk in self.ollama_client.chat_stream(request.prompt):
+                output += chunk
+                yield chunk
+            # Save the output to the database
+            llm_model = Message(role="assistant", content=output)
+            self.message_repository.save(llm_model)
+            return output    

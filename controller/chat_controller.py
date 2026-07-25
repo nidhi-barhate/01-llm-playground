@@ -12,3 +12,9 @@ router = APIRouter()
 def chat(request: ChatRequest, db: Session = Depends(get_db)):
     service = LLMService(db)
     return service.chat(request)
+
+
+@router.post("/chat/stream")
+def chat_stream(request: ChatRequest, db: Session = Depends(get_db)):
+    service = LLMService(db)
+    return service.chat_stream(request)

@@ -2,7 +2,7 @@
 
 A conversational AI backend built from scratch using **Python**, **FastAPI**, **SQLite**, and **Ollama**.
 
-This project demonstrates the core architecture behind modern LLM-powered applications by implementing conversation memory, persistent chat history, and local Large Language Model (LLM) integration without relying on AI frameworks such as LangChain or LlamaIndex.
+This project demonstrates the core architecture behind modern LLM-powered applications by implementing conversation memory, persistent chat history, and real-time streaming responses without relying on AI orchestration frameworks such as LangChain or LlamaIndex.
 
 ---
 
@@ -11,6 +11,7 @@ This project demonstrates the core architecture behind modern LLM-powered applic
 - Build a conversational AI backend from scratch
 - Understand how LLM APIs communicate using structured messages
 - Implement persistent conversation memory
+- Stream AI responses in real time
 - Learn clean layered backend architecture
 - Integrate a locally hosted LLM using Ollama
 
@@ -34,13 +35,14 @@ This project demonstrates the core architecture behind modern LLM-powered applic
 
 - RESTful Chat API
 - Interactive Swagger UI
-- Local LLM Integration (Ollama)
+- Local LLM Integration
 - Persistent Conversation Memory
 - Multi-turn Context-Aware Conversations
+- Real-time Streaming Responses
 - SQLAlchemy ORM
 - Repository Pattern
 - Service Layer Architecture
-- Clean Layered Design
+- Layered Architecture
 
 ---
 
@@ -90,19 +92,19 @@ This project demonstrates the core architecture behind modern LLM-powered applic
 ollama serve
 ```
 
-Download the model (if not already installed)
+Pull the model
 
 ```bash
 ollama pull qwen3:8b
 ```
 
-### Run the Application
+Run the application
 
 ```bash
 uvicorn app:app --reload
 ```
 
-Open Swagger UI
+Open Swagger
 
 ```text
 http://localhost:8000/docs
@@ -129,8 +131,8 @@ Starts a new conversation or continues an existing conversation.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `new_chat` | Boolean | `true` starts a new conversation by clearing the existing conversation history. `false` continues the current conversation by loading the previous messages and sending them to the LLM as context. |
-| `prompt` | String | User's input message. |
+| `new_chat` | Boolean | Starts a new conversation when `true`; otherwise continues the existing conversation using stored history. |
+| `prompt` | String | User input message. |
 
 ### Response
 
@@ -144,65 +146,45 @@ Starts a new conversation or continues an existing conversation.
 
 ## 🧠 Conversation Memory
 
-This project demonstrates how conversational memory works in LLM applications.
+When `new_chat` is `true`, the application clears the previous conversation and starts a fresh session.
 
-### New Conversation
+When `new_chat` is `false`, it loads the previous messages from SQLite, reconstructs the conversation, appends the latest user prompt, and sends the complete context to the LLM.
 
-```json
-{
-  "new_chat": true,
-  "prompt": "Hello"
-}
-```
-
-Flow
-
-```text
-Clear Conversation History
-        │
-        ▼
-Save User Message
-        │
-        ▼
-Send Current Prompt to LLM
-        │
-        ▼
-Save Assistant Response
-```
+This enables context-aware conversations across multiple user interactions.
 
 ---
 
-### Continue Conversation
+## ⚡ Streaming Responses
 
-```json
-{
-  "new_chat": false,
-  "prompt": "What is my name?"
-}
-```
+The application also supports streaming responses from the LLM.
 
-Flow
+Instead of waiting for the complete response, the client receives small chunks of generated text as they become available.
+
+### Non-Streaming
 
 ```text
-Load Conversation History
-        │
-        ▼
-Append Current User Message
-        │
-        ▼
-Convert Messages to LLM Payload
-        │
-        ▼
-Send Complete Conversation
-        │
-        ▼
-Receive Assistant Response
-        │
-        ▼
-Save Assistant Response
+User
+   │
+(wait)
+   ▼
+Complete Response
 ```
 
-This enables the model to generate context-aware responses by using the complete conversation history instead of only the latest prompt.
+### Streaming
+
+```text
+User
+   │
+H
+He
+Hel
+Hell
+Hello
+Hello!
+...
+```
+
+Streaming provides a more responsive user experience and mirrors how modern AI chat applications display generated text.
 
 ---
 
@@ -218,13 +200,13 @@ Save User Message
 Load Conversation History
       │
       ▼
-Convert Database Records → LLM Messages
+Build LLM Message Payload
       │
       ▼
 Send Request to Ollama
       │
       ▼
-Receive Assistant Response
+Receive Response (Streaming or Complete)
       │
       ▼
 Save Assistant Response
@@ -240,7 +222,8 @@ Return Response
 - LLM API Integration
 - Chat Message Roles (`system`, `user`, `assistant`)
 - Conversation Memory
-- Prompt Construction
+- Context Reconstruction
+- Streaming Responses
 - Local Model Execution
 - SQLAlchemy ORM
 - Repository Pattern
@@ -257,8 +240,9 @@ Building this project helped me understand:
 - How conversational LLM applications communicate using structured messages
 - The purpose of `system`, `user`, and `assistant` roles
 - How conversation memory is implemented using persistent chat history
+- How streaming responses improve user experience
 - How to integrate local LLMs with Ollama
-- How to design a clean, maintainable backend architecture
+- How to design a clean and maintainable backend architecture
 - How SQLAlchemy and SQLite manage conversation data
 - How context-aware AI applications reconstruct conversation history before sending requests to an LLM
 
