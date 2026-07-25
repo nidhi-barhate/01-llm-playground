@@ -3,12 +3,11 @@ from config.settings import Settings
 class OllamaClient:
     def chat(self, prompt: str) -> str:
         url = f"{Settings.OLLAMA_BASE_URL}/api/chat"
-
         payload = {
             "model": Settings.OLLAMA_MODEL,
             "messages": [
                 {
-                    "role": "assistant",
+                    "role": "user",
                     "content": prompt
                 }
             ],
